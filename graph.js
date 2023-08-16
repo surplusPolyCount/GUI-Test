@@ -4,25 +4,7 @@
 
 //class for data point that represent 
 //point in graph space
-class point{
-    constructor(x, y){
-        this.x = x; 
-        this.y = y;
-    }
-}
 
-//function to get distance between two points sqrd
-function distSqrd(p1, p2){
-    return (p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y) * (p2.y-p1.y);
-}
-
-//function to draw small segment of graph
-function drawLine(ctx, point1, point2){
-    ctx.beginPath(); 
-    ctx.moveTo(point1.x, point1.y); 
-    ctx.lineTo(point2.x, point2.y); 
-    ctx.stroke(); 
-}
 
 //class for data of type point that will be used for interpolation 
 class graphPoint{
@@ -51,21 +33,46 @@ class graphPoint{
                       this.radius, this.radius, Math.PI, 0, 2 * Math.PI);
         this.g.ctx.fill();
 
-        var b = document.getElementById(this.el_id + "_input_text");
-        
-        b.style.top =  this.g.gtcs(this.o.x, this.o.y).y -30 + "px";
-        b.style.left = this.g.gtcs(this.o.x, this.o.y).x - 30+ "px";
-        
-        var rect = b.getBoundingClientRect();
-        console.log(b.id, rect.top, rect.right, rect.bottom, rect.left);
-        //console.log("drawn at: " + this.g.gtcs(this.o.x, this.o.y).x + " " + this.g.gtcs(this.o.x, this.o.y).y);
     }
 
 
 }
 
-class element extends graphPoint {
+class iElement extends graphPoint {
 
+}
+
+class progamNode extends iElement {
+    constructor(origin, color, g){
+        super(origin, color, g)
+        
+    }
+    mouseOver(mousePos){
+        //if distance^2 from mousePos,origin < radius^2
+        console.log("m: ", mousePos, "o: ", this.g.gtcs(this.o.x, this.o.y))
+        var inbox = (mousePos.x > this.g.gtcs(this.o.x, this.o.y).x && 
+        mousePos.x < this.g.gtcs(this.o.x, this.o.y).x + 125 &&
+        mousePos.y > this.g.gtcs(this.o.x, this.o.y).y &&
+        mousePos.y < this.g.gtcs(this.o.x, this.o.y).y + 125);
+        console.log(inbox);
+        return inbox;
+            
+    }
+
+    draw(){
+        drawRectangle(this.g.ctx, this.g.gtcs(this.o.x, this.o.y), 125, 150, [5, 5, 5, 5]);
+        drawRectangle(this.g.ctx, this.g.gtcs(this.o.x, this.o.y), 125, 30, [5, 5, 0, 0], "#bbb");
+
+        super.draw(); 
+
+        var b = document.getElementById(this.el_id + "_input_text");
+        
+        b.style.top =  this.g.gtcs(this.o.x, this.o.y).y + 50 + "px";
+        b.style.left = this.g.gtcs(this.o.x, this.o.y).x + 10+ "px";
+        
+        var rect = b.getBoundingClientRect();
+        //console.log(b.id, rect.top, rect.right, rect.bottom, rect.left);
+    }
 }
 
 //class for graph
@@ -91,16 +98,16 @@ class graph{
 
         //list of points to be used for interpolating 
         this.graphPoints = [];
-        this.i_elements = []; //interactable elements 
+        this.iElements = []; //interactable elements 
 
         
     }
 
     //checks if mouse is hovering over a point used for interpolation
     checkMouseInteractionClick(mousePos){
-        for(let q = 0; q < this.i_elements.length; q++){
-            if(this.i_elements[q].mouseOver(mousePos)){
-                console.log("got em!: ", this.i_elements[q].el_id);
+        for(let q = 0; q < this.iElements.length; q++){
+            if(this.iElements[q].mouseOver(mousePos)){
+                console.log("got em!: ", this.iElements[q].el_id);
                 return q; 
             }
         }
@@ -137,19 +144,10 @@ class graph{
         this.graphPoints.splice(ptIdx, 1); 
     }
 
-    //add a point to list of points to use in interpolation
-    //  point: POINT the point to add to graphPoints
-    addPoint(point){
-        //create graphPoint given a general point
-        var mPoint = new graphPoint(point, this.p_color, this);
+    addIElement(point){
+        var mPoint = new progamNode(point,  "#88f", this);
         //add point
-        this.graphPoints.push(mPoint);
-    }
-
-    add_i_element(point){
-        var mPoint = new graphPoint(point,  "#88f", this);
-        //add point
-        this.i_elements.push(mPoint);
+        this.iElements.push(mPoint);
     }
 
     //graph to canvas space (converts coordinates to pixel values of canvas)
@@ -181,53 +179,24 @@ class graph{
 
     //draws the background of the graph 
     drawCoordinatePlane(){
+        var vertline_cnt = 20;
+        var horiline_cnt = 40; 
+
         //draw background color of graph
-        this.ctx.fillStyle = "#222222";
+        this.ctx.fillStyle = "#121212";
         this.ctx.beginPath();
         this.ctx.rect(0, 0, this.w, this.h);
         this.ctx.fill();
 
         //draw grey back lines of grid 
-        this.ctx.strokeStyle = "#888888";
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = "#444";
         //horizontal 
-        for(let i = 0; i < 5; i++)
-            drawLine(this.ctx, new point(0, i * (this.h/5)), new point(this.w, i * (this.h/5)));
+        for(let i = 0; i < vertline_cnt; i++)
+            drawLine(this.ctx, new point(0, i * (this.h/vertline_cnt)), new point(this.w, i * (this.h/vertline_cnt)));
         //vertical 
-        for(let j = 0; j < 5; j++)
-            drawLine(this.ctx, new point(j * (this.w/5), 0), new point(j * (this.w/5), this.h));
-        //this.ctx.strokeStyle = "#aaaaaa";
-        //horizontal 
-        for(let i = 0; i < 10; i++)
-            drawLine(this.ctx, new point(0, i * this.h/10), new point(this.w, i * (this.h/10)));
-        //vertical 
-        for(let j = 0; j < 10; j++)
-            drawLine(this.ctx, new point(j * (this.w/10), 0), new point(j * (this.w/10), this.h));
-
-
-        //draw thick lines 
-        this.ctx.strokeStyle = "#f5f5f5";
-        drawLine(this.ctx, new point(this.w/2, 0), new point(this.w/2, this.h));
-        drawLine(this.ctx, new point(0, this.h/2), new point(this.w, this.h/2));
-    
-        //draw numbers onto graph 
-        this.ctx.font = '12px helvetica';
-        let valX = this.xMin;
-        let valY = this.yMin;
-        let range = Math.abs(this.xMax - this.xMin);
-        let tickCnt = 10; 
-        let decToShow = 2;  //establish how many decimals to show 
-        if(range < 10) decToShow = 2;
-        if(range < 5)  decToShow = 2; 
-        if(range < 1) decToShow = 4; 
-        if(range < 0.1) decToShow = 8;  
-        for(let i = 0; i < tickCnt+1; i++){
-            //draw x range
-            this.ctx.strokeText(valX.toFixed(decToShow), this.gtcs(valX, 0).x, this.gtcs(valX, 0).y+15);
-            valX += (range/tickCnt); 
-            //draw y range
-            this.ctx.strokeText(valY.toFixed(decToShow), this.gtcs(0, valY).x, this.gtcs(0, valY).y);
-            valY += (range/tickCnt); 
-        }
+        for(let j = 0; j < horiline_cnt; j++)
+            drawLine(this.ctx, new point(j * (this.w/horiline_cnt), 0), new point(j * (this.w/horiline_cnt), this.h));
     }
 
 
@@ -241,29 +210,14 @@ class graph{
     //render interactable element
     render_ie(){
         cgraph.drawCoordinatePlane();
-
-        this.graphPoints.forEach(function (point){
-            point.draw();
-        });
-
         //draw points 
-        this.i_elements.forEach(function (el){
+        this.iElements.forEach(function (el){
             el.draw();
         });
     }
 }
 
-function createIptTextBox(el_id){
-    var c = document.getElementById("node-collection");
-    var input = document.createElement("input");
-    input.id = el_id + "_input_text";
-    input.classList.add("node-properties")
-    input.setAttribute("type", "text");
-    input.setAttribute("name", "command");
-    input.setAttribute("value", 'command');
-    c.appendChild(input);
-    
-}
+
 
 
 

@@ -10,24 +10,32 @@ class Mouse{
         this.grph = graph;
         //the index of point 
         this.ptInd = -1; 
+        this.offset = new point(0, 0)
     }
 
     UpdateLoc(canvas, evt){
        this.loc_canvas = this.getMousePos(canvas, evt);
        this.loc_graph = this.grph.ctgs(this.loc_canvas.x, this.loc_canvas.y);
+       //the offset between top left & mouse pos 
        if(this.ptInd != -1){
            //update the point's location 
-           this.grph.i_elements[this.ptInd].o.x = this.loc_graph.x; 
-           this.grph.i_elements[this.ptInd].o.y = -this.loc_graph.y; 
+           this.grph.iElements[this.ptInd].o.x = this.loc_graph.x - this.offset.x; 
+           this.grph.iElements[this.ptInd].o.y = -this.loc_graph.y + this.offset.x; 
        }
        
     }
 
-    CapturePoint(){
+    CapturePoint(canvas, evt){
+        
         console.log("called");
         this.ptInd = this.grph.checkMouseInteractionClick(this.loc_canvas); 
         if(this.ptInd != -1){
-                console.log(this.ptInd);   
+            //if we actuall are within the bounds of grabbing something: 
+            this.loc_graph = this.grph.ctgs(this.loc_canvas.x, this.loc_canvas.y);
+
+            this.offset.x = this.loc_graph.x - this.grph.iElements[this.ptInd].o.x;
+            this.offset.y = this.loc_graph.y - this.grph.iElements[this.ptInd].o.y;  
+            console.log(this.ptInd);   
         }
     }
 

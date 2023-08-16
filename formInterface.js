@@ -156,39 +156,3 @@ function zoomGraph(evt, g){
         g.render_ie()
     }
 }
-
-
-
-
-
-/* 
-    1) TODOS: 
-        create a mouse object that stores the mouse position in graph and canvas space ~> YES
-        create a function that will draw text on mouse  ~> YES
-
-    2) TODOS: 
-        YES
-        get that github nice n going 
-        YES
-        merge master branch with main branch
-        
-        YES
-        get function to check if mouse is near point
-            ~> have mouse store index of point if near && mouse is pressed 
-            ~> have mouse erase index of point if mouse is released && index != -1 
-        
-        YES
-        make it so update function checks
-            if index != -1 
-                update the point of that graph point 8) 
-        
-        UPGRADE TF OUT OF THE CSS FOR THIS SHIT 
-            -> get graph using dark theme 
-            -> get the graph the appropriate width of the window 
-            -> get the side bar to pop in and out 
-            -> top toolbar 
-            
-
-        Display the current graphing function 
-            -> asthetically pleasing way of showing these stoopid ass functions
-*/
