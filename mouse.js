@@ -9,39 +9,44 @@ class Mouse{
         //graph the mouse will reference 
         this.grph = graph;
         //the index of point 
-        this.ptInd = -1; 
+        this.pt = null; 
         this.offset = new point(0, 0)
     }
 
     UpdateLoc(canvas, evt){
        this.loc_canvas = this.getMousePos(canvas, evt);
        this.loc_graph = this.grph.ctgs(this.loc_canvas.x, this.loc_canvas.y);
+       this.loc_graph.y *= -1; 
        //the offset between top left & mouse pos 
-       if(this.ptInd != -1){
-           //update the point's location 
-           this.grph.iElements[this.ptInd].o.x = this.loc_graph.x - this.offset.x; 
-           this.grph.iElements[this.ptInd].o.y = -this.loc_graph.y + this.offset.x; 
+       if(this.pt != null){
+            this.pt.UpdateLoc(this.loc_graph, this.offset);
        }
        
     }
 
-    CapturePoint(canvas, evt){
-        
-        console.log("called");
-        this.ptInd = this.grph.checkMouseInteractionClick(this.loc_canvas); 
-        if(this.ptInd != -1){
+    CapturePoint(){
+        this.pt = this.grph.checkMouseInteractionClick(this.loc_canvas); 
+
+        if(this.pt != null){
+            
             //if we actuall are within the bounds of grabbing something: 
             this.loc_graph = this.grph.ctgs(this.loc_canvas.x, this.loc_canvas.y);
-
-            this.offset.x = this.loc_graph.x - this.grph.iElements[this.ptInd].o.x;
-            this.offset.y = this.loc_graph.y - this.grph.iElements[this.ptInd].o.y;  
-            console.log(this.ptInd);   
+            this.loc_graph.y *= -1; 
+            /*
+            console.log("mouse: ", this.loc_graph);
+            console.log("obj: ", this.pt.o);
+            */
+            this.offset.x = this.loc_graph.x - this.pt.o.x;
+            this.offset.y = this.pt.o.y - this.loc_graph.y;  
+            /*
+            console.log(this.pt);
+            console.log(this.loc_graph);
+            */
         }
     }
 
     ReleasePoint(){
-        console.log("released"); 
-        this.ptInd = -1;
+        this.pt = null;
     }
 
     getMousePos(canvas, evt) {

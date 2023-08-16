@@ -18,7 +18,7 @@ function drawLine(ctx, point1, point2){
     ctx.stroke(); 
 }
 
-function drawRectangle(ctx, p, w, h, borderRadius, bCol = "#444", lCol=bCol){
+function drawRectangle(ctx, p, w, h, borderRadius, bCol = "#333", lCol=bCol){
     ctx.lineWidth = 5;
     ctx.strokeStyle = lCol;
     ctx.fillStyle = bCol;
@@ -36,7 +36,7 @@ function createIptTextBox(el_id){
     input.setAttribute("type", "text");
     input.setAttribute("name", "command");
     input.setAttribute("value", 'command');
-    input.style.width = "115px"; 
+    input.style.width = "100px"; 
     c.appendChild(input);
     
 }

@@ -15,11 +15,11 @@ var m = new Mouse(new point(0,0),
 
 function Start(){
     
-    var a  = new point(-1.212, 0);
-    var b = new point( 2, 5); 
+    var a  = new point(-1.212, -3);
+    //var b = new point( 2, 5); 
 
     cgraph.addIElement(a);
-    cgraph.addIElement(b);
+    //cgraph.addIElement(b);
 
 
     //render graph
@@ -33,7 +33,7 @@ function Start(){
     
     //https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
     canvas.addEventListener('mousedown',  function(evt){
-        m.CapturePoint(canvas, evt);
+        m.CapturePoint();
     }, false);
 
     canvas.addEventListener('mouseup',  function(evt){

@@ -6,7 +6,8 @@ body{
 }
 
 input{
-    background-color: #fff;
+    background-color: #121212;
+    color: white; 
     border: none; 
     border-radius: 3px;
     
@@ -29,7 +30,8 @@ button{
 .node-properties{
     z-index: 100; 
     position: absolute; 
-    background-color: white;
+    background-color: #666;
+    color: white;
     left: 200px; 
     top: 200px;
 }

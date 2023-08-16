@@ -5,9 +5,8 @@
 //class for data point that represent 
 //point in graph space
 
-
 //class for data of type point that will be used for interpolation 
-class graphPoint{
+class iElement{
     constructor(origin, color, g){
         this.o = origin; //origin of point
         this.c = color;  //color of point to be drawn on graph
@@ -15,13 +14,15 @@ class graphPoint{
         this.g = g;      //graph this point belongs too
         this.el_id = Math.floor(Math.random() * 100);
 
-        createIptTextBox(this.el_id);
     }
 
     //checks if mouse is over a point (in graph space) used for interpolation
     mouseOver(mousePos){
         //if distance^2 from mousePos,origin < radius^2
-        return distSqrd(this.g.gtcs(this.o.x, this.o.y), mousePos) < (this.radius * this.radius); 
+        if(distSqrd(this.g.gtcs(this.o.x, this.o.y), mousePos) < (this.radius * this.radius)){
+            //console.log(this);
+            return this; 
+        }return null; 
     }
 
     //draws point on graph as circle
@@ -35,43 +36,116 @@ class graphPoint{
 
     }
 
-
+    UpdateLoc(mouseGraphPos, mouseOffsetFromOrigin){
+                   //update the point's location 
+                   this.o.x = mouseGraphPos.x - mouseOffsetFromOrigin.x; 
+                   this.o.y = mouseGraphPos.y + mouseOffsetFromOrigin.y; 
+    }
 }
 
-class iElement extends graphPoint {
 
+class nodeConnector extends iElement{
+    constructor(origin, color, g, isOut = false, connectNode = null){
+        super(origin, color, g);
+        this.isOut = isOut; 
+        this.cn = connectNode; 
+    }
+    draw(){
+        super.draw();
+        console.log("node draw");
+    }
 }
 
-class progamNode extends iElement {
+
+class node extends iElement {
     constructor(origin, color, g){
         super(origin, color, g)
-        
+        this.w = 125;
+        this.h = 150;
+        this.labelHeight = 30; 
+
     }
     mouseOver(mousePos){
         //if distance^2 from mousePos,origin < radius^2
-        console.log("m: ", mousePos, "o: ", this.g.gtcs(this.o.x, this.o.y))
-        var inbox = (mousePos.x > this.g.gtcs(this.o.x, this.o.y).x && 
-        mousePos.x < this.g.gtcs(this.o.x, this.o.y).x + 125 &&
-        mousePos.y > this.g.gtcs(this.o.x, this.o.y).y &&
-        mousePos.y < this.g.gtcs(this.o.x, this.o.y).y + 125);
-        console.log(inbox);
-        return inbox;
+        //console.log("m: ", mousePos, "o: ", this.g.gtcs(this.o.x, this.o.y))
+        var mouseGraphSpace = this.g.ctgs(mousePos.x, mousePos.y);
+        var objTopLeft = this.o; 
+        var objBottomRight = this.g.gtcs(this.o.x, this.o.y);
+        objBottomRight.x += this.w; 
+        objBottomRight.y -= this.h; 
+        objBottomRight = this.g.ctgs(objBottomRight.x, objBottomRight.y);
+        
+        var isInBox = (mouseGraphSpace.x > objTopLeft.x && 
+            mouseGraphSpace.x < objBottomRight.x &&
+            -mouseGraphSpace.y < objTopLeft.y &&
+            mouseGraphSpace.y > objBottomRight.y);
+  
+        if (isInBox){
+            return this; 
+        }return null; 
             
     }
 
     draw(){
-        drawRectangle(this.g.ctx, this.g.gtcs(this.o.x, this.o.y), 125, 150, [5, 5, 5, 5]);
-        drawRectangle(this.g.ctx, this.g.gtcs(this.o.x, this.o.y), 125, 30, [5, 5, 0, 0], "#bbb");
+        drawRectangle(this.g.ctx, this.g.gtcs(this.o.x, this.o.y), this.w, this.h, [5, 5, 5, 5], "#333", "#bbb");
+        drawRectangle(this.g.ctx, this.g.gtcs(this.o.x, this.o.y), this.w, this.labelHeight, [5, 5, 0, 0], "#486");
 
         super.draw(); 
 
         var b = document.getElementById(this.el_id + "_input_text");
         
-        b.style.top =  this.g.gtcs(this.o.x, this.o.y).y + 50 + "px";
-        b.style.left = this.g.gtcs(this.o.x, this.o.y).x + 10+ "px";
+        b.style.top =  this.g.gtcs(this.o.x, this.o.y).y + this.labelHeight + 20 + "px";
+        b.style.left = this.g.gtcs(this.o.x, this.o.y).x + 20 + "px";
         
         var rect = b.getBoundingClientRect();
-        //console.log(b.id, rect.top, rect.right, rect.bottom, rect.left);
+    }
+}
+
+class programNode extends node{
+
+    constructor(origin, color, g, ipts = 1, opts = 1){
+        super(origin, color, g);
+        this.inConnectors = []; 
+        this.outConnectors = []; 
+
+        //program settings 
+        this.properties=null; 
+
+        //render all of the input & output nodes 
+        for (var i = 0; i < ipts; i++){
+            var nodeConOrigin = new point(this.o.x, 
+                                          this.o.y, - ((i + 1) * 10)); 
+            console.log(nodeConOrigin);
+            console.log(this.o);
+            this.inConnectors.push(new nodeConnector(nodeConOrigin, "#bbb", this.g));
+        }
+
+        createIptTextBox(this.el_id);
+
+
+    }
+
+    UpdateLoc(mouseGraphPos, mouseOffsetFromOrigin){
+        super.UpdateLoc(mouseGraphPos, mouseOffsetFromOrigin);
+ 
+        this.inConnectors.forEach(function(inCon){
+            inCon.o.x = mouseGraphPos.x - mouseOffsetFromOrigin.x; 
+            inCon.o.y = mouseGraphPos.y + mouseOffsetFromOrigin.y; 
+        });
+        this.outConnectors.forEach(function(outCon){
+            outCon.o.x = mouseGraphPos.x - mouseOffsetFromOrigin.x; 
+            outCon.o.y = mouseGraphPos.y + mouseOffsetFromOrigin.y; 
+        });
+    }
+
+    draw (){
+        super.draw(); 
+        this.inConnectors.forEach(function(inCon){
+            inCon.draw();
+        });
+        this.outConnectors.forEach(function(outCon){
+            outCon.draw();
+        });
     }
 }
 
@@ -108,10 +182,11 @@ class graph{
         for(let q = 0; q < this.iElements.length; q++){
             if(this.iElements[q].mouseOver(mousePos)){
                 console.log("got em!: ", this.iElements[q].el_id);
-                return q; 
+                //UPDATE TO SCAN THAT OBJECT IF THE MOUSE I HOVERING OVER ANY OUTNOODLENODES
+                return  this.iElements[q]; 
             }
         }
-        return -1;   
+        return null;   
     }
 
     //checks if range of graph is too small to continue zooming in
@@ -145,7 +220,7 @@ class graph{
     }
 
     addIElement(point){
-        var mPoint = new progamNode(point,  "#88f", this);
+        var mPoint = new programNode(point,  "#88f", this);
         //add point
         this.iElements.push(mPoint);
     }
@@ -183,7 +258,7 @@ class graph{
         var horiline_cnt = 40; 
 
         //draw background color of graph
-        this.ctx.fillStyle = "#121212";
+        this.ctx.fillStyle = "#222";
         this.ctx.beginPath();
         this.ctx.rect(0, 0, this.w, this.h);
         this.ctx.fill();
