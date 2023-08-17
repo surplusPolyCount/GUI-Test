@@ -19,8 +19,8 @@ class Mouse{
        //console.log(this.loc_graph, this.loc_canvas)
        //the offset between top left & mouse pos 
        if(this.pt != null){
-            console.log("dragging");
-            console.log(this.loc_graph, this.pt.o)
+            //console.log("dragging");
+            //console.log(this.loc_graph, this.pt.o)
             this.pt.UpdateLoc(this.loc_graph, this.loc_canvas);
        }
        
@@ -42,13 +42,25 @@ class Mouse{
         }
     }
 
-    ReleasePoint(){
+    ReleasePoint(canvas, evt){
         if(this.pt != null && this.pt.constructor.name == "nodeConnector"){
             //check if above a node we can connect too 
-            //if not 
+            this.loc_canvas = this.getMousePos(canvas, evt);
+            var belowpt = this.grph.checkMouseInteractionClick(this.loc_canvas);
+            console.log("searching ...") 
+            if(belowpt != null && belowpt.constructor.name == "programNode"){
+                //console.log(this.pt.constructor.name)
+                //iterate through to see if we are hovering on any of the connection nodes: 
+                let connecter  = belowpt.isOnConnectorNode(this.loc_canvas);
+                if(connecter != null){
+                    console.log("FOUND ONE! TO DROP ON! ")
+                    this.pt.parentCn.parentCn= connecter
+                    this.pt.parentCn.childCn = null;
+                }
+            }else{            
             //  delete
-            //this.pt.cnCn.cnCn = null; 
-            //delete(this.pt)
+                this.pt.parentCn.childCn = null;
+            }
             //this.pt = null; 
             //else 
             //  connect and do that thingy 

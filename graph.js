@@ -60,22 +60,23 @@ class nodeConnector extends iElement{
         super(origin, color, g);
         this.isOut = isOut; 
         this.parentNode = pn; 
-        this.cn = connectNode; //other program node connected too 
-        this.cnCn = null //other connection node 
+        //this.cn = connectNode; //other program node connected too 
+        this.childCn = null
+        this.parentCn = null 
         this.offset = offset; 
     }
     draw(){
-        if (this.cnCn != null){
-            console.log("drawing a baby")
+        if (this.childCn != null){
+            //console.log("drawing a baby")
             
-            this.cnCn.draw();
+            this.childCn.draw();
 
             this.g.ctx.lineWidth = 4;
             this.g.ctx.strokeStyle = "#999"
             this.g.ctx.fillStyle = "#999"
 
             let o = this.g.gtcs(this.o.x, this.o.y); 
-            let cn_o = this.g.gtcs(this.cnCn.o.x, this.cnCn.o.y)
+            let cn_o = this.g.gtcs(this.childCn.o.x, this.childCn.o.y)
 
             let start = { x: o.x, y: o.y };
             let cp1 = { x: o.x + (cn_o.x - o.x)/2, y: o.y };
@@ -89,21 +90,38 @@ class nodeConnector extends iElement{
             this.g.ctx.stroke();
 
             
-            //drawLine(this.g.ctx, this.g.gtcs(this.o.x, this.o.y), this.g.gtcs(this.cnCn.o.x, this.cnCn.o.y))
         }
+        if (this.parentCn != null && this.parentCn.childCn != this){
+            //this.childCn.draw();
 
+            this.g.ctx.lineWidth = 4;
+            this.g.ctx.strokeStyle = "#999"
+            this.g.ctx.fillStyle = "#999"
+
+            let o = this.g.gtcs(this.o.x, this.o.y); 
+            let cn_o = this.g.gtcs(this.parentCn.o.x, this.parentCn.o.y)
+
+            let start = { x: o.x, y: o.y };
+            let cp1 = { x: o.x + (cn_o.x - o.x)/2, y: o.y };
+            let cp2 = { x: o.x + (cn_o.x - o.x)/2, y: cn_o.y };
+            let end = { x: cn_o.x, y: cn_o.y };
+
+            // Cubic Bézier curve
+            this.g.ctx.beginPath();
+            this.g.ctx.moveTo(start.x, start.y);
+            this.g.ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
+            this.g.ctx.stroke();
+        }
         super.draw();
-        //console.log("drawing a baby")
-
-
     }
 
     handleConnection(){
         var p = new nodeConnector(new point(this.o.x, this.o.y), "#bbb", this.g, -1, null)
-        this.cnCn = p 
+        this.childCn = p 
+        p.parentCn = this;
         //p.cnCn = this; 
-        console.log(this.cnCn, p, this)
-        return this.cnCn
+        //console.log(this.cnCn, p, this)
+        return this.childCn
     }
 }
 

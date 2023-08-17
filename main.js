@@ -44,7 +44,7 @@ function Start(){
     }, false);
 
     canvas.addEventListener('mouseup',  function(evt){
-        m.ReleasePoint();
+        m.ReleasePoint(canvas, evt);
     }, false);
 ///*
     canvas.addEventListener('mousemove', function(evt) {

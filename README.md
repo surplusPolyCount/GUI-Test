@@ -1,7 +1,7 @@
 # To-Dos: 
--resolve issues with boundary box checker 
+Y -resolve issues with boundary box checker 
 -get the connectors able to link code-wise/visually to each other (with basic line)
--get connectors working with spline 
+Y -get connectors working with spline 
 -create buttons/hotkeys to add new nodes at mouse position
 -create three or four different node types: 
     1) unicycler 
@@ -22,3 +22,4 @@
 # For the future: 
 
 get everything on the 1-inf sacle (starting in bottom left)
+Everything will be in a parent/child transform structure (none of this weird offsetting BS)
