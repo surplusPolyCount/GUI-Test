@@ -20,7 +20,6 @@ class iElement{
     mouseOver(mousePos){
         //if distance^2 from mousePos,origin < radius^2
         if(distSqrd(this.g.gtcs(this.o.x, this.o.y), mousePos) < (this.radius * this.radius)){
-            //console.log(this);
             return this; 
         }return null; 
     }
@@ -36,23 +35,36 @@ class iElement{
 
     }
 
-    UpdateLoc(mouseGraphPos, mouseOffsetFromOrigin){
-                   //update the point's location 
-                   this.o.x = mouseGraphPos.x - mouseOffsetFromOrigin.x; 
-                   this.o.y = mouseGraphPos.y + mouseOffsetFromOrigin.y; 
+    UpdateLoc(mouseGraphPos, mouseCanvasPos){
+                   var offset =  new point(0, 0)
+                  // var o_c = this.g.gtcs(this.o.x, this.o.y);
+                   
+                  // offset.x = mouseGraphPos.x + (mouseCanvasPos.x - o_c.x);
+                   //offset.y = mouseGraphPos.x + (mouseCanvasPos.y - o_c.y);
+                   
+                   //console.log(mouseGraphPos, this.o, offset.x, offset.y)
+
+                   //offset = this.g.ctgs(offset.x, offset.y)
+
+                   this.o.x = offset.x// + offset.x; 
+                   this.o.y = offset.y// + offset.y; 
+                   
+                   this.o.x = mouseGraphPos.x; 
+                   this.o.y = mouseGraphPos.y
     }
 }
 
 
 class nodeConnector extends iElement{
-    constructor(origin, color, g, isOut = false, connectNode = null){
+    constructor(origin, color, g, offset, pn, isOut = false, connectNode = null){
         super(origin, color, g);
         this.isOut = isOut; 
+        this.parentNode = pn; 
         this.cn = connectNode; 
+        this.offset = offset; 
     }
     draw(){
         super.draw();
-        console.log("node draw");
     }
 }
 
@@ -64,21 +76,27 @@ class node extends iElement {
         this.h = 150;
         this.labelHeight = 30; 
 
+        //bottom right in graph space of the obj 
+        var br = this.g.gtcs(this.o.x, this.o.y);
+        br.x += this.w; 
+        br.y += this.h; 
+        this.br = this.g.ctgs(br.x, br.y);
     }
     mouseOver(mousePos){
         //if distance^2 from mousePos,origin < radius^2
         //console.log("m: ", mousePos, "o: ", this.g.gtcs(this.o.x, this.o.y))
-        var mouseGraphSpace = this.g.ctgs(mousePos.x, mousePos.y);
-        var objTopLeft = this.o; 
-        var objBottomRight = this.g.gtcs(this.o.x, this.o.y);
-        objBottomRight.x += this.w; 
-        objBottomRight.y -= this.h; 
-        objBottomRight = this.g.ctgs(objBottomRight.x, objBottomRight.y);
+    
+        //top left
+        var tl = this.o;
+        //bottom right 
+        var br = this.g.gtcs(this.o.x, this.o.y);
+        br.x += this.w; 
+        br.y -= this.h; 
         
-        var isInBox = (mouseGraphSpace.x > objTopLeft.x && 
-            mouseGraphSpace.x < objBottomRight.x &&
-            -mouseGraphSpace.y < objTopLeft.y &&
-            mouseGraphSpace.y > objBottomRight.y);
+        var isInBox = (mousePos.x > tl.x + 10 && 
+            mousePos.x < br.x &&
+            -mousePos.y < tl.y &&
+            mousePos.y > br.y);
   
         if (isInBox){
             return this; 
@@ -97,14 +115,15 @@ class node extends iElement {
         b.style.top =  this.g.gtcs(this.o.x, this.o.y).y + this.labelHeight + 20 + "px";
         b.style.left = this.g.gtcs(this.o.x, this.o.y).x + 20 + "px";
         
-        var rect = b.getBoundingClientRect();
+        //var rect = b.getBoundingClientRect();
     }
 }
 
 class programNode extends node{
 
-    constructor(origin, color, g, ipts = 1, opts = 1){
+    constructor(origin, color, g, name, ipts = 3, opts = 2){
         super(origin, color, g);
+        this.name = name; 
         this.inConnectors = []; 
         this.outConnectors = []; 
 
@@ -112,30 +131,40 @@ class programNode extends node{
         this.properties=null; 
 
         //render all of the input & output nodes 
-        for (var i = 0; i < ipts; i++){
-            var nodeConOrigin = new point(this.o.x, 
-                                          this.o.y, - ((i + 1) * 10)); 
-            console.log(nodeConOrigin);
-            console.log(this.o);
-            this.inConnectors.push(new nodeConnector(nodeConOrigin, "#bbb", this.g));
+        for (var i = 1; i < ipts+1; i++){
+            let nodeConOrigin = new point(this.o.x, this.o.y - i * 0.5); 
+            this.inConnectors.push(new nodeConnector(nodeConOrigin, "#bbb", this.g, i, this));
+        }
+        for (var i = 1; i < opts+1; i++){
+            console.log(this.br, this.o)
+            let nodeConOrigin = new point(this.br.x, this.br.y + i * 0.5); 
+            this.outConnectors.push(new nodeConnector(nodeConOrigin, "#bbb", this.g, i, this));
         }
 
         createIptTextBox(this.el_id);
+    }
 
+    UpdateLoc(mouseGraphPos, mouseCanvasPos){
+        super.UpdateLoc(mouseGraphPos, mouseCanvasPos);
+ 
+        this.inConnectors.forEach(function(inCon){
+            inCon.o.x = mouseGraphPos.x 
+            inCon.o.y = mouseGraphPos.y - inCon.offset * 0.5; 
+        });
+
+        this.outConnectors.forEach(function(outCon){
+            var br = outCon.g.gtcs(mouseGraphPos.x, mouseGraphPos.y);
+            br.x += outCon.parentNode.w; 
+            br.y += outCon.parentNode.h; 
+            br = outCon.g.ctgs(br.x, br.y)
+            outCon.o.x =   br.x;
+            outCon.o.y =   br.y + outCon.offset * 0.5; 
+        });
 
     }
 
-    UpdateLoc(mouseGraphPos, mouseOffsetFromOrigin){
-        super.UpdateLoc(mouseGraphPos, mouseOffsetFromOrigin);
- 
-        this.inConnectors.forEach(function(inCon){
-            inCon.o.x = mouseGraphPos.x - mouseOffsetFromOrigin.x; 
-            inCon.o.y = mouseGraphPos.y + mouseOffsetFromOrigin.y; 
-        });
-        this.outConnectors.forEach(function(outCon){
-            outCon.o.x = mouseGraphPos.x - mouseOffsetFromOrigin.x; 
-            outCon.o.y = mouseGraphPos.y + mouseOffsetFromOrigin.y; 
-        });
+    isOnConnectorNode(){
+        
     }
 
     draw (){
@@ -172,9 +201,7 @@ class graph{
 
         //list of points to be used for interpolating 
         this.graphPoints = [];
-        this.iElements = []; //interactable elements 
-
-        
+        this.iElements = []; //interactable elements   
     }
 
     //checks if mouse is hovering over a point used for interpolation
@@ -220,9 +247,15 @@ class graph{
     }
 
     addIElement(point){
-        var mPoint = new programNode(point,  "#88f", this);
+        var mPoint = new iElement(point,  "#88f", this);
         //add point
         this.iElements.push(mPoint);
+    }
+
+    addProgramNode(point, name){
+        var mNode = new programNode(point,  "#88f", this, name);
+        //add point
+        this.iElements.push(mNode);
     }
 
     //graph to canvas space (converts coordinates to pixel values of canvas)
@@ -244,12 +277,22 @@ class graph{
     // x: NUM x pixel value in canvas
     // y: NUM y pixel value in canvas
     ctgs(x, y){
+        let xhalf = Math.abs(this.xMax -  this.xMin)/2; 
+        let xmid = xhalf + this.xMin;
+        let newx = ((x/this.w * 2)-1) * xhalf  + xmid; 
+
+        let yhalf = Math.abs(this.yMax -  this.yMin)/2; 
+        let ymid = yhalf + this.yMin;
+        let newy = (1 - y/this.h * 2) * yhalf + ymid;
+        return new point(newx, newy);
+        /*
         let xLen = Math.abs(this.xMax -  this.xMin); 
         let xGraphCoord = x/this.w * xLen + this.xMin;
         
         let yLen = Math.abs(this.yMax -  this.yMin); 
         let yGraphCoord = y/this.h * yLen + this.yMin;
         return new point(xGraphCoord, yGraphCoord);
+        */
     }
 
     //draws the background of the graph 

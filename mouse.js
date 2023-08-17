@@ -16,33 +16,32 @@ class Mouse{
     UpdateLoc(canvas, evt){
        this.loc_canvas = this.getMousePos(canvas, evt);
        this.loc_graph = this.grph.ctgs(this.loc_canvas.x, this.loc_canvas.y);
-       this.loc_graph.y *= -1; 
+       //console.log(this.loc_graph, this.loc_canvas)
        //the offset between top left & mouse pos 
        if(this.pt != null){
-            this.pt.UpdateLoc(this.loc_graph, this.offset);
+   
+            this.pt.UpdateLoc(this.loc_graph, this.loc_canvas);
        }
        
     }
 
-    CapturePoint(){
+    CapturePoint(canvas, evt){
+        this.loc_canvas = this.getMousePos(canvas, evt);
         this.pt = this.grph.checkMouseInteractionClick(this.loc_canvas); 
-
+        console.log(this.pt.constructor.name)
+        if(this.pt.constructor.name == "programNode"){
+            //iterate through to see if we are hovering on any of the connection nodes: 
+            console.log("checking programNode if clicking on connectors")
+        }
+        /*
         if(this.pt != null){
-            
             //if we actuall are within the bounds of grabbing something: 
             this.loc_graph = this.grph.ctgs(this.loc_canvas.x, this.loc_canvas.y);
-            this.loc_graph.y *= -1; 
-            /*
-            console.log("mouse: ", this.loc_graph);
-            console.log("obj: ", this.pt.o);
-            */
-            this.offset.x = this.loc_graph.x - this.pt.o.x;
-            this.offset.y = this.pt.o.y - this.loc_graph.y;  
-            /*
-            console.log(this.pt);
-            console.log(this.loc_graph);
-            */
+
+            //this.offset.x = this.loc_graph.x - this.pt.o.x;
+            //this.offset.y = this.pt.o.y - this.loc_graph.y;  
         }
+        */
     }
 
     ReleasePoint(){

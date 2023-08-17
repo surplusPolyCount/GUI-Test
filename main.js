@@ -3,8 +3,8 @@
 var canvas = document.getElementById("m-canvas"); 
 
 //resize canvas 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+//canvas.width = window.innerWidth;
+//canvas.height = window.innerHeight;
 
 var cgraph = new graph(canvas, "#ff0000", "#f88"); //create canvas graph 
   ////create mouse 
@@ -15,11 +15,18 @@ var m = new Mouse(new point(0,0),
 
 function Start(){
     
-    var a  = new point(-1.212, -3);
-    //var b = new point( 2, 5); 
+    var a  = new point(1.212, -5);
+    var b = new point( 2, 5); 
+    var c = new point(0, 0);
+    var d = new point(-10, -1)
 
-    cgraph.addIElement(a);
     //cgraph.addIElement(b);
+    //cgraph.addIElement(c);
+    //cgraph.addIElement(d);
+
+    cgraph.addProgramNode(a, "Unicycler")
+    cgraph.addProgramNode(b, "Trimmomatic")
+
 
 
     //render graph
@@ -33,20 +40,20 @@ function Start(){
     
     //https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent
     canvas.addEventListener('mousedown',  function(evt){
-        m.CapturePoint();
+        m.CapturePoint(canvas, evt);
     }, false);
 
     canvas.addEventListener('mouseup',  function(evt){
         m.ReleasePoint();
     }, false);
-
+///*
     canvas.addEventListener('mousemove', function(evt) {
         m.UpdateLoc(canvas, evt);
         cgraph.drawCoordinatePlane();
         cgraph.render_ie();
 
     }, false);
-    
+   //*/
 }
 
 
