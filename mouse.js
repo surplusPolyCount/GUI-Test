@@ -32,6 +32,7 @@ class Mouse{
         if(this.pt.constructor.name == "programNode"){
             //iterate through to see if we are hovering on any of the connection nodes: 
             console.log("checking programNode if clicking on connectors")
+            this.pt.isOnConnectorNode();
         }
         /*
         if(this.pt != null){
